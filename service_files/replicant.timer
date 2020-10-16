@@ -1,6 +1,9 @@
 [Unit]
-Description=Run Latest Release Script
-Wants=ethereum-build.timer
+Description=Run the latest release script every 15 minutes
 
-[Service]
-ExecStart=/opt/replicant/.env/bin/python /opt/replicant/latest_release.py
+[Timer]
+OnBootSec=10min
+OnUnitActiveSec=15min
+
+[Install]
+WantedBy=timers.target
