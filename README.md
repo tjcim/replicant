@@ -1,4 +1,4 @@
-# Ethereum Staking
+# Replicant
 
 This is a collection of Dockerfiles, a couple of python script for automation along with a couple of other goodies. There are two options for use:
 
