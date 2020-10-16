@@ -1,0 +1,180 @@
+---
+
+- name: setup
+  hosts: localhost
+  become: true
+
+  vars_files:
+    - vars.yml
+
+  tasks:
+
+# Setup Docker
+    
+    - name: Get user name
+      # Switch to ansible.builtin.command once issue 71824 is implemented
+      command: echo "$USER"
+      register: __user
+      become: false
+      changed_when: false
+
+    - ansible.builtin.set_fact:
+        user: "{{__user.stdout}}"
+
+    - name: Update system
+      ansible.builtin.apt:
+        upgrade: dist
+        update_cache: true
+
+    - name: Install docker prereqs
+      ansible.builtin.apt:
+        name:
+          - apt-transport-https
+          - ca-certificates
+          - curl
+          - gnupg-agent
+          - software-properties-common
+          - python3-docker
+
+    - name: Add docker gpg key
+      ansible.builtin.apt_key:
+        url: https://download.docker.com/linux/ubuntu/gpg
+        state: present
+
+    - name: Add docker repository
+      ansible.builtin.apt_repository:
+        repo: deb https://download.docker.com/linux/ubuntu focal stable
+        state: present
+
+    - name: Install docker
+      ansible.builtin.apt:
+        name:
+          - docker-ce
+          - docker-ce-cli
+          - containerd.io
+        update_cache: true
+
+    - name: Add user to docker group
+      ansible.builtin.user:
+        name: "{{ user }}"
+        groups: docker
+        append: true
+
+    - name: Download docker-compose
+      ansible.builtin.get_url:
+        url: "https://github.com/docker/compose/releases/download/1.27.3/docker-compose-Linux-x86_64"
+        dest: /usr/local/bin/docker-compose
+        mode: '0755'
+
+# Install docker registry container tasks
+    
+    - name: Create /var/docker/certs directory
+      ansible.builtin.file:
+        path: /var/docker/certs
+        state: directory
+
+    - name: Generate a private key with default values
+      community.crypto.openssl_privatekey:
+        path: /var/docker/certs/docker_registry.key
+
+    - name: Generate a certificate signing request
+      community.crypto.openssl_csr:
+        path: /var/docker/certs/docker_registry.csr
+        privatekey_path: /var/docker/certs/docker_registry.key
+        common_name: "{{ docker_registry_host }}"
+
+    - name: Create self-signed cert for docker registry
+      community.crypto.x509_certificate:
+        path: /var/docker/certs/docker_registry.crt
+        privatekey_path: /var/docker/certs/docker_registry.key
+        csr_path: /var/docker/certs/docker_registry.csr
+        provider: selfsigned
+
+    - name: Start docker registry container
+      community.general.docker_container:
+        name: registry
+        image: registry:2
+        ports:
+          - "{{ docker_registry_port }}:{{ docker_registry_port }}"
+        restart_policy: always
+        volumes:
+          - /var/docker/registry:/var/lib/registry
+          - /var/docker/certs:/certs
+        env:
+          REGISTRY_HTTP_ADDR: "{{ docker_registry_listening_ip }}:{{ docker_registry_port }}"
+          REGISTRY_HTTP_TLS_CERTIFICATE: /certs/docker_registry.crt
+          REGISTRY_HTTP_TLS_KEY: /certs/docker_registry.key
+        container_default_behavior: no_defaults
+
+    - name: "Add {{ docker_registry_host }} to /etc/hosts"
+      ansible.builtin.lineinfile:
+        path: /etc/hosts
+        line: "127.0.0.1 {{ docker_registry_host }}"
+
+    - name: Copy self-signed cert to /usr/share/ca-certificates
+      ansible.builtin.copy:
+        src: /var/docker/certs/docker_registry.crt
+        dest: /usr/share/ca-certificates/docker_registry.crt
+        remote_src: true
+      register: __copy_cert
+
+    - name: Add self-signed cert to /etc/ca-certificates.conf file
+      ansible.builtin.lineinfile:
+        path: /etc/ca-certificates.conf
+        line: "docker_registry.crt"
+      register: __ca_certificates
+
+    - name: Update trusted certs
+      # Switch to ansible.builtin.command once issue 71824 is implemented
+      command: update-ca-certificates
+      when: __copy_cert.changed or __ca_certificates.changed
+
+# Setup python environment
+   
+    - name: Install required packages
+      ansible.builtin.apt:
+        name:
+          - python3-venv
+    
+    - name: Create python virtual environment and install dependencies
+      ansible.builtin.pip:
+        virtualenv: "{{ clone_directory }}/.env"
+        virtualenv_command: "/usr/bin/python3 -m venv"
+        requirements: "{{ clone_directory }}/requirements.txt"
+
+    - name: Change the owner of the python environment directory
+      ansible.builtin.file:
+        path: "{{ clone_directory }}/.env"
+        state: directory
+        recurse: true
+        owner: "{{ user }}"
+        group: "{{ user }}"
+
+    - name: Check if the config.py file already exists
+      ansible.builtin.stat:
+        path: "{{ clone_directory }}/config.py"
+      register: __config_py
+
+    # copy the config.py.sample file only when the config.py file does not exist
+    - name: Copy the config.py.sample file to config.py
+      ansible.builtin.copy:
+        src: "{{ clone_directory }}/config.py.sample"
+        dest: "{{ clone_directory }}/config.py"
+        remote_src: true
+        owner: "{{ user }}"
+        group: "{{ user }}"
+      when: __config_py.stat.exists == False
+
+    - name: Ensure the registry is configured in config.py
+      ansible.builtin.lineinfile:
+        path: "{{ clone_directory }}/config.py"
+        line: 'DOCKER_REGISTRY = "{{ docker_registry_host }}:{{ docker_registry_port }}"'
+        regexp: '^DOCKER_REGISTRY ='
+        state: present
+
+# Install some useful tools
+
+    - name: Install tools
+      ansible.builtin.apt:
+        name:
+          - jq

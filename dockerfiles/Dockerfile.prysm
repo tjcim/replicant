@@ -1,0 +1,33 @@
+# Build Prysm
+FROM l.gcr.io/google/bazel:3.2.0 as builder
+ARG RELEASE=master
+
+RUN apt-get update && apt-get install -y libgmp-dev libxml2 libssl-dev
+RUN git clone https://github.com/prysmaticlabs/prysm.git
+WORKDIR prysm
+RUN git config advice.detachedHead false \
+    && git fetch --all --tags \
+    && git checkout $RELEASE
+
+# Build the binaries
+RUN bazel build --config=release //beacon-chain:beacon-chain
+RUN bazel build --config=release //validator:validator
+RUN bazel build --config=release //slasher:slasher
+
+# Copy the binaries out to the root folder.
+# This is done so that we do not have to use git checkout in the final image.
+RUN cp bazel-bin/beacon-chain/linux_amd64_stripped/beacon-chain /beacon
+RUN cp bazel-bin/validator/linux_amd64_stripped/validator /validator
+RUN cp bazel-bin/slasher/linux_amd64_stripped/slasher /slasher
+
+# Build the final image
+FROM debian:buster-slim
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
+COPY --from=builder /prysm/bazel-bin/beacon-chain/linux_amd64_stripped/beacon-chain /usr/local/bin/beacon
+COPY --from=builder /prysm/bazel-bin/validator/linux_amd64_stripped/validator /usr/local/bin/validator
+COPY --from=builder /prysm/bazel-bin/slasher/linux_amd64_stripped/slasher /usr/local/bin/slasher
+
+EXPOSE 4000 8080 13000 12000/udp

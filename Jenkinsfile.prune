@@ -1,0 +1,14 @@
+pipeline {
+  agent any
+  stages {
+    stage('Building Docker Image') {
+      steps {
+        script {
+          sh """#!/bin/bash
+                docker image prune -f
+          """
+        }
+      }
+    }
+  }
+}

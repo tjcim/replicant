@@ -1,0 +1,6 @@
+[Unit]
+Description=Run Latest Release Script
+Wants=ethereum-build.timer
+
+[Service]
+ExecStart=/opt/replicant/.env/bin/python /opt/replicant/latest_release.py

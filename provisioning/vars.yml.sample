@@ -1,0 +1,5 @@
+clone_directory: /opt/replicant
+
+docker_registry_host: registry.local
+docker_registry_listening_ip: 0.0.0.0
+docker_registry_port: 8443
