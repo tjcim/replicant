@@ -1,0 +1,58 @@
+---
+
+- name: advanced
+  hosts: localhost
+  become: true
+
+  vars_files:
+    - vars.yml
+
+  tasks:
+
+    # Setup Jenkins
+
+    - name: Build tag and push Jenkins Image
+      community.general.docker_image:
+        name: "{{ docker_registry_url }}/jenkins"
+        build:
+          dockerfile: "{{ clone_directory }}/provisioning/Dockerfile.jenkins"
+          path: "{{ clone_directory }}/provisioning"
+          pull: true
+        tag: latest
+        push: true
+        source: build
+
+    - name: Create Jenkins volume
+      community.general.docker_volume:
+        name: "jenkins_data"
+
+    - name: Run Jenkins container
+      community.general.docker_container:
+        name: jenkins
+        image: "{{ docker_registry_url }}/jenkins"
+        state: started
+        ports:
+          - "{{ jenkins_listening_ip }}:{{ jenkins_port }}:{{ jenkins_port }}/tcp"
+        volumes:
+          - "jenkins_data:/var/jenkins_home"
+          - "/var/run/docker.sock:/var/run/docker.sock"
+        networks:
+          - name: bridge
+        network_mode: bridge
+        networks_cli_compatible: true
+        restart_policy: unless-stopped
+        container_default_behavior: no_defaults
+
+    # Service Files
+
+    - name: Copy the replicant.service to /etc/systemd/system/replicant.service
+      ansible.builtin.copy:
+        src: "{{ clone_directory }}/service_files/replicant.service"
+        dest: "/etc/systemd/system/replicant.service"
+        remote_src: true
+
+    - name: Copy the replicant.timer to /etc/systemd/system/replicant.timer
+      ansible.builtin.copy:
+        src: "{{ clone_directory }}/service_files/replicant.timer"
+        dest: "/etc/systemd/system/replicant.timer"
+        remote_src: true

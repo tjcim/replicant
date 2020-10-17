@@ -10,9 +10,8 @@ pipeline {
     stage('Checkout project') {
       steps {
         git(
-          url: 'git@github.com:tjcim/replicant.git',
-          credentialsId: 'c07319f0-cd2e-4388-8ff3-8afa35d48328',
-          branch: "master"
+          url: 'https://github.com/tjcim/replicant.git',
+          branch: "main"
         )
       }
     }
