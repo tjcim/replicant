@@ -26,7 +26,7 @@ If you are unfamiliar with Ansible it is a program that is used to configure sys
 Install Ansible:
 
 ```
-sudo apt install ansible
+sudo apt install -y ansible git
 ```
 
 Install Ansible modules:
