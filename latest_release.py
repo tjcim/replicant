@@ -32,7 +32,7 @@ def trigger_build(build_dict):
         f"&REGISTRY={config.DOCKER_REGISTRY}"
         f"&RELEASE={build_dict['release_id']}"
         f"&APP_NAME={build_dict['app_name']}"
-        f"&EMAIL={config.EMAIL}"
+        f"&EMAIL={config.JENKINS_EMAIL}"
     )
     resp = requests.get(url, auth=auth, verify=False)
     if resp.status_code == 201:

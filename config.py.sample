@@ -1,10 +1,10 @@
 # Basic configuration
-DOCKER_REGISTRY = "myregistry.local"
+DOCKER_REGISTRY = "registry.local"
 
 # Advanced configuration
-EMAIL = "myemail@domain.tld"
-JENKINS_URL = "https://jenkins.local"
 JENKINS_USER = "user"
-JENKINS_API_TOKEN = "API Token"
-JENKINS_JOB = "job_name"
-JENKINS_TOKEN_NAME = "trigger_token_name"
+JENKINS_EMAIL = "myemail@domain.tld"
+JENKINS_URL = "https://jenkins.local"
+JENKINS_TOKEN_NAME = "replicant"
+JENKINS_API_TOKEN = "Change me"
+JENKINS_JOB = "replicant"
