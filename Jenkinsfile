@@ -11,7 +11,7 @@ pipeline {
       steps {
         git(
           url: 'https://github.com/tjcim/replicant.git',
-          branch: "master"
+          branch: "main"
         )
       }
     }
