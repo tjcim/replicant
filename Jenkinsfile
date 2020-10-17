@@ -10,7 +10,7 @@ pipeline {
     stage('Checkout project') {
       steps {
         git(
-          url: 'git@github.com:tjcim/replicant.git',
+          url: 'https://github.com/tjcim/replicant.git',
           branch: "master"
         )
       }
