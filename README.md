@@ -7,6 +7,12 @@ This is a collection of Dockerfiles, a couple of python script for automation al
 
 The instructions are written for a Linux workstation (Ubuntu is used, for this example. If you are using something else, you may have to adjust the Ansible tasks to your needs).
 
+## Who is this for?
+
+This is built for someone that is familiar with docker and wants to stake Ethereum using Docker containers. The targeted user is someone who already has a way to manage their running containers and is just looking for a way to always have the latest build ready and waiting. While there is nothing complicated about what this project does, it does not dictate how you will manage running containers and leaves that up to the user.
+
+Personally I use this project along with Ansible to manage my running containers.
+
 ## Prerequisites
 
 * `docker`
@@ -173,18 +179,124 @@ A couple of notes:
 
 ## Advanced
 
-Documentation is coming!
+This sets up the system for automatic building of releases anytime a new one is published. It accomplishes this by creating a Jenkins docker container in combination with a systemd timer file and systemd service file. The timer file kicks off every 15 minutes and then activates the service. The service calls the `latest_release.py` script.
 
-### Jenkins Integration
+### `latest_release.py`
 
+This script checks for available docker build files and then goes to the Github repository to check for the latest release. Once it has gathered the latest releases it checks each against the images in the docker repository (set up during the basic setup). If the image is not present it triggers a Jenkins build of the image. Jenkins will build, tag, and push the release to the docker registry.
 
-### Systemd Service and Timer
+### Setup
 
-To use the service files copy both the `replicant.service` and `replicant.timer` to `/etc/systemd/system/`. Once done you can manually trigger a check by starting the service:
+Run ansible against the `provisioning/advanced.yml` file. This will do the following:
 
+* Start a docker instance of Jenkins
+* Copy the service files into `/etc/systemd/system/`
+* Setup an SMTP relay on the localhost (to receive emails from Jenkins).
+
+```
+ansible-playbook -K /opt/replicant/provisioning/advanced.yml
+```
+
+Check that the Jenkins container is running:
+
+```
+docker container ls
+```
+
+### Configure Jenkins
+
+Once the Jenkins container is running you can open a browser and visit [http://localhost:8080](http://localhost:8080). Here you will be asked for the Administrator password. You can find that by viewing the container logs:
+
+```
+docker logs jenkins
+```
+
+Choose to install suggested plugins and then configure your account.
+
+** Create an API Token **
+
+1. Click on your user name in the top right
+2. Click on Configure
+3. Click Add new Token button in the API Token section.
+4. Give it a name and hit Generate (I suggest that you use the name replicant)
+6. Set the value of `JENKINS_TOKEN_NAME` to the name you gave entered (replicant)
+5. Copy the token and put it in the `config.py` as the value for `JENKINS_API_TOKEN`
+7. Click Save on the Jenkins page
+
+** Create Jenkins Job **
+
+1. Click on Jenkins in the top left to get to the home page
+2. Click on New Item
+3. Give your job a name (I suggest you use the name replicant)
+4. Click on Pipeline
+5. Click OK
+6. Give a description if you want
+7. Enable the `Do not allow concurrent builds` (optional)
+7. Enable the `This project is parameterized` checkbox
+8. Click Add Parameter -> String. In the name field enter `REGISTRY`
+8. Click Add Parameter -> String. In the name field enter `RELEASE`
+8. Click Add Parameter -> String. In the name field enter `APP_NAME`
+8. Click Add Parameter -> String. In the name field enter `EMAIL`
+8. In the Build Triggers section check the box named `Trigger builds remotely (e.g., from scripts)`
+9. Enter the name you entered when you created the API token (step 4 in previous section)
+10. In the Pipeline section click the Definition drop down and select `Pipeline script from SCM`
+11. Click the SCM drop down and select `Git`
+12. Enter in the repository URL: `https://github.com/tjcim/replicant.git`
+13. In the Branches to build -> Branch Specifier (blank for 'any') box enter `*/main`
+13. Click Save at the bottom
+
+** Add Job info to `config.py` **
+
+1. Enter the user name used in Jenkins as the value of `JENKINS_USER`
+2. Enter the Job name you entered on step 3 in the previous section as the value for `JENKINS_JOB` (suggested name of replicant)
+3. Verify that all entries in the `config.py` file are filled out
+
+### Demo Email Setup
+
+The following setup will probably not work for you. The main reason is that your ISP is probably blocking port 25. But, I feel the demo would not be complete without showing the email notification part. So, here are the steps I took to do the email notifications in the demo video:
+
+Start a postfix email server - I do not vouch for this image and am only using it for the demo
+```
+docker container run --rm --name postfix -e "ALLOWED_SENDER_DOMAINS=jenkins.blah nowhere" -p 1587:587 boky/postfix
+```
+
+Create a docker network:
+```
+docker network create blah
+```
+
+Connect both containers to the network
+```
+docker network connect blah jenkins
+docker network connect blah postfix
+```
+
+** Configure Jenkins **
+
+1. From the Jenkins homepage click `Manage Jenkins`
+2. Click `Configure System`
+3. In the `Jenkins Location` section enter in the System Admin e-mail address: `no-reply@jenkins.blah`
+4. Scroll down to the `E-mail Notification` and set the SMTP server to `postfix`
+5. Set the Default user e-mail suffix to `@jenkins.blah`
+6. Click on Advanced
+7. Set the SMTP Port to 587
+8. Set the Reply-To Address to `no-reply@jenkins.blah`
+9. Test the config by sending an email
+10. If it all works click Save
+
+### Test the Service
+
+Ansible has copied the service file to `/etc/sytemd/system/replicant.servic`. To verify that everything is working run:
 ```
 sudo systemctl start replicant.service
 ```
+
+Use the following to check the output form the script:
+```
+sudo systemctl status replicant.service
+```
+
+Check Jenkins to confim the builds have been kicked off. Wait for them to complete to ensure they are building successfully.
 
 Once you are satisfied that the service file works as expected, enable the timer file:
 
