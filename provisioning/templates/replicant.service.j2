@@ -1,0 +1,8 @@
+[Unit]
+Description=Run Latest Release Script
+Wants=replicant.timer
+
+[Service]
+User="{{ service_user }}"
+group="{{ service_group }}"
+ExecStart=/opt/replicant/.env/bin/python /opt/replicant/latest_release.py

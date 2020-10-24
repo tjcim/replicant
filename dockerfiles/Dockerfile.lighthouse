@@ -4,6 +4,7 @@ ARG RELEASE=master
 RUN apt-get update && apt-get install -y cmake \
     git \
     wget \
+    curl \
     build-essential \
     && git clone https://github.com/sigp/lighthouse.git
 WORKDIR lighthouse

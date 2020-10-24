@@ -9,6 +9,11 @@ pipeline {
   stages {
     stage('Checkout project') {
       steps {
+        script {
+          sh """#!/bin/bash
+                echo "Building ${params.APP_NAME}, release: ${params.RELEASE}"
+             """
+        }
         git(
           url: 'https://github.com/tjcim/replicant.git',
           branch: "main"

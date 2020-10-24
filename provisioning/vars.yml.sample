@@ -1,6 +1,8 @@
 ---
 
-# Script variables
+# Provisioning variables
+service_user: user
+service_group: user
 clone_directory: /opt/replicant
 
 # Docker variables

@@ -9,8 +9,8 @@
 
   tasks:
 
-# Setup Docker
-    
+    # Setup Docker
+
     - name: Get user name
       # Switch to ansible.builtin.command once issue 71824 is implemented
       command: echo "$USER"
@@ -66,8 +66,8 @@
         dest: /usr/local/bin/docker-compose
         mode: '0755'
 
-# Install docker registry container tasks
-    
+    # Install docker registry container tasks
+
     - name: Create /var/docker/certs directory
       ansible.builtin.file:
         path: /var/docker/certs
@@ -129,13 +129,13 @@
       command: update-ca-certificates
       when: __copy_cert.changed or __ca_certificates.changed
 
-# Setup python environment
-   
+    # Setup python environment
+
     - name: Install required packages
       ansible.builtin.apt:
         name:
           - python3-venv
-    
+
     - name: Create python virtual environment and install dependencies
       ansible.builtin.pip:
         virtualenv: "{{ clone_directory }}/.env"
@@ -172,7 +172,7 @@
         regexp: '^DOCKER_REGISTRY ='
         state: present
 
-# Install some useful tools
+    # Install some useful tools
 
     - name: Install tools
       ansible.builtin.apt:

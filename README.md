@@ -1,5 +1,7 @@
 # Replicant
 
+[Video demo](https://youtu.be/UX5pKOA48hM)
+
 This is a collection of Dockerfiles, a couple of python script for automation along with a couple of other goodies. There are two options for use:
 
 * Basic Usage: The basic usage to build, tag and store docker images in a docker registry. This process requires manually running the `build.py` script.
@@ -12,6 +14,13 @@ The instructions are written for a Linux workstation (Ubuntu is used, for this e
 This is built for someone that is familiar with docker and wants to stake Ethereum using Docker containers. The targeted user is someone who already has a way to manage their running containers and is just looking for a way to always have the latest build ready and waiting. While there is nothing complicated about what this project does, it does not dictate how you will manage running containers and leaves that up to the user.
 
 Personally I use this project along with Ansible to manage my running containers.
+
+## Change Log
+
+**Oct 24th 2020**
+* Changed the service file to run as a user (configured in `vars.yml`) - Issue #1
+* Added curl to `Dockerfile.lighthouse` - Issue #3
+* Added a pipeline script to print the app name and release at the beginning - Issue #2
 
 ## Prerequisites
 
