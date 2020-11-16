@@ -1,8 +1,12 @@
 # Build Prysm
-FROM l.gcr.io/google/bazel:3.2.0 as builder
+FROM rust:slim-buster AS builder
 ARG RELEASE=master
 
-RUN apt-get update && apt-get install -y libgmp-dev libxml2 libssl-dev
+RUN apt-get update && apt-get install -y libgmp-dev libxml2 libssl-dev g++ unzip zip curl git python libncurses5
+RUN cd "/" \
+    && curl -fLO https://github.com/bazelbuild/bazel/releases/download/3.7.0/bazel-3.7.0-installer-linux-x86_64.sh \
+    && chmod +x bazel-3.7.0-installer-linux-x86_64.sh \
+    && ./bazel-3.7.0-installer-linux-x86_64.sh
 RUN git clone https://github.com/prysmaticlabs/prysm.git
 WORKDIR prysm
 RUN git config advice.detachedHead false \
@@ -16,9 +20,9 @@ RUN bazel build --config=release //slasher:slasher
 
 # Copy the binaries out to the root folder.
 # This is done so that we do not have to use git checkout in the final image.
-RUN cp bazel-bin/beacon-chain/linux_amd64_stripped/beacon-chain /beacon
-RUN cp bazel-bin/validator/linux_amd64_stripped/validator /validator
-RUN cp bazel-bin/slasher/linux_amd64_stripped/slasher /slasher
+RUN cp bazel-bin/beacon-chain/beacon-chain_/beacon-chain /beacon
+RUN cp bazel-bin/validator/validator_/validator /validator
+RUN cp bazel-bin/slasher/slasher_/slasher /slasher
 
 # Build the final image
 FROM debian:buster-slim
@@ -26,8 +30,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
-COPY --from=builder /prysm/bazel-bin/beacon-chain/linux_amd64_stripped/beacon-chain /usr/local/bin/beacon
-COPY --from=builder /prysm/bazel-bin/validator/linux_amd64_stripped/validator /usr/local/bin/validator
-COPY --from=builder /prysm/bazel-bin/slasher/linux_amd64_stripped/slasher /usr/local/bin/slasher
+COPY --from=builder /prysm/bazel-bin/beacon-chain/beacon-chain_/beacon-chain /usr/local/bin/beacon
+COPY --from=builder /prysm/bazel-bin/validator/validator_/validator /usr/local/bin/validator
+COPY --from=builder /prysm/bazel-bin/slasher/slasher_/slasher /usr/local/bin/slasher
 
 EXPOSE 4000 8080 13000 12000/udp

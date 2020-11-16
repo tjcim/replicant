@@ -1,9 +1,9 @@
 [Unit]
-Description=Run the latest release script every 15 minutes
+Description=Run the latest release script every 60 minutes
 
 [Timer]
 OnBootSec=10min
-OnUnitActiveSec=15min
+OnUnitActiveSec=60min
 
 [Install]
 WantedBy=timers.target

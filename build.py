@@ -47,11 +47,10 @@ def query_yes_no(question, default="yes"):
         choice = input().lower()
         if default is not None and choice == '':
             return valid[default]
-        elif choice in valid:
+        if choice in valid:
             return valid[choice]
-        else:
-            print("Please respond with 'yes' or 'no' "
-                  "(or 'y' or 'n').\n")
+        print("Please respond with 'yes' or 'no' "
+              "(or 'y' or 'n').\n")
 
 
 def parse_feed(feed, entry=0):
