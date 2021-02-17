@@ -1,4 +1,4 @@
-FROM rust:slim-buster AS builder
+FROM rust:1.50-slim-buster AS builder
 ARG RELEASE=master
 
 RUN apt-get update && apt-get install -y cmake \
