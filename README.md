@@ -17,6 +17,10 @@ Personally I use this project along with Ansible to manage my running containers
 
 ## Change Log
 
+**March 9th 2021**
+
+* Fixed failing Prysm build. Issue #7
+
 **Oct 24th 2020**
 * Changed the service file to run as a user (configured in `vars.yml`) - Issue #1
 * Added curl to `Dockerfile.lighthouse` - Issue #3
