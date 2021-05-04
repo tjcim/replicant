@@ -31,7 +31,7 @@ def trigger_build(build_dict):
         f"{config.JENKINS_URL}/job/{config.JENKINS_JOB}"
         f"/buildWithParameters?token={config.JENKINS_TOKEN_NAME}"
         f"&REGISTRY={config.DOCKER_REGISTRY}"
-        f"&RELEASE={urllib.parse.quote(build_dict['release_id'])}"
+        f"&RELEASE={build_dict['release_id'].replace('+', '_')}"
         f"&APP_NAME={build_dict['app_name']}"
         f"&EMAIL={config.JENKINS_EMAIL}"
     )
