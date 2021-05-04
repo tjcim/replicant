@@ -49,7 +49,7 @@ def registry_image_exists(app_name, release):
     if registry_app_name in repositories:
         url = f"https://{config.DOCKER_REGISTRY}/v2/ethereum/{app_name}/tags/list"
         resp = requests.get(url, verify=False)
-        if release['id'] in resp.json()['tags']:
+        if release['id'].replace("+", "_") in resp.json()['tags']:
             return True
     return False
 
