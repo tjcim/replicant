@@ -149,14 +149,14 @@ def build_docker_image(args):
     if args['tag_latest']:
         command = (
             f"docker build --build-arg RELEASE={args['release']['id']}"
-            f" -t {REGISTRY}/ethereum/{args['app_name']}:{args['release']['id']}"
+            f" -t {REGISTRY}/ethereum/{args['app_name']}:{args['release']['id'].replace('+', '_')}"
             f" -t {REGISTRY}/ethereum/{args['app_name']}:latest"
             f" -f dockerfiles/Dockerfile.{args['app_name']} dockerfiles"
         )
     else:
         command = (
             f"docker build --build-arg RELEASE={args['release']['id']}"
-            f" -t {REGISTRY}/ethereum/{args['app_name']}:{args['release']['id']}"
+            f" -t {REGISTRY}/ethereum/{args['app_name']}:{args['release']['id'].replace('+', '_')}"
             f" -f dockerfiles/Dockerfile.{args['app_name']} dockerfiles"
         )
     log.info(f"Running command: {command}")
@@ -171,7 +171,7 @@ def push_docker_image(args):
         )
         subprocess.run(command.split())
     command = (
-        f"docker push {REGISTRY}/ethereum/{args['app_name']}:{args['release']['id']}"
+        f"docker push {REGISTRY}/ethereum/{args['app_name']}:{args['release']['id'].replace('+', '_')}"
     )
     subprocess.run(command.split())
 
