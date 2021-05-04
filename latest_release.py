@@ -3,6 +3,7 @@
 import os
 import sys
 import logging
+import urllib.parse
 from urllib3.exceptions import InsecureRequestWarning
 
 import click
@@ -30,7 +31,7 @@ def trigger_build(build_dict):
         f"{config.JENKINS_URL}/job/{config.JENKINS_JOB}"
         f"/buildWithParameters?token={config.JENKINS_TOKEN_NAME}"
         f"&REGISTRY={config.DOCKER_REGISTRY}"
-        f"&RELEASE={build_dict['release_id']}"
+        f"&RELEASE={urllib.parse.quote(build_dict['release_id'])}"
         f"&APP_NAME={build_dict['app_name']}"
         f"&EMAIL={config.JENKINS_EMAIL}"
     )
