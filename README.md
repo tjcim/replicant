@@ -17,6 +17,16 @@ Personally I use this project along with Ansible to manage my running containers
 
 ## Change Log
 
+**August 3rd 2021**
+
+* Issue #8: Utility failed to build because of the removed release. The RSS feed shows v1.10.0 as released, but it looks like it was deleted. I added a dictionary at the top of the `build.py` that is checked before building. If there is a matching entry then the release is skipped.
+
+```python
+SKIP = {
+    "utility": ["v1.10.0"],
+}
+```
+
 **March 9th 2021**
 
 * Fixed failing Prysm build. Issue #7
