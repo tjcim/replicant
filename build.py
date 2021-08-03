@@ -22,6 +22,10 @@ URLS = {
     'teku': 'https://github.com/PegaSysEng/teku',
     'utility': 'https://github.com/wealdtech/ethdo'
 }
+# If I want to skip any
+SKIP = {
+    "utility": ["v1.10.0"],
+}
 logging.basicConfig(
     stream=sys.stdout,
     level=logging.INFO,
@@ -65,6 +69,14 @@ def parse_feed(feed, entry=0):
     return release
 
 
+def should_skip(app_name, feed, rss_entry):
+    if SKIP.get(app_name):
+        release = parse_feed(feed, rss_entry)
+        if release.get("id") in SKIP[app_name]:
+            return True
+    return False
+
+
 def get_latest_releases(app_name):
     releases_url = URLS[app_name] + "/releases.atom"
     feed = feedparser.parse(releases_url)
@@ -74,7 +86,8 @@ def get_latest_releases(app_name):
         entries = len(feed['entries'])
     latest_releases = []
     for x in range(entries):
-        latest_releases.append(parse_feed(feed, x))
+        if not should_skip(app_name, feed, x):
+            latest_releases.append(parse_feed(feed, x))
     return latest_releases
 
 
