@@ -24,7 +24,7 @@ URLS = {
 }
 # If I want to skip any
 SKIP = {
-    "utility": ["v1.10.0", "v1.10.1", "v1.10.2"],
+    "utility": ["v1.10.0", "v1.10.1", "v1.10.2", "v1.10.3"],
 }
 logging.basicConfig(
     stream=sys.stdout,
