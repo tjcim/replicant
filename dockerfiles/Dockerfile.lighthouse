@@ -1,3 +1,4 @@
+ARG RELEASE=latest
 FROM sigp/lighthouse:$RELEASE
 
 EXPOSE 9000/tcp 9000/udp 5052/tcp
