@@ -16,13 +16,13 @@ RUN git config advice.detachedHead false \
 # Build the binaries
 RUN bazel build --config=release //cmd/beacon-chain:beacon-chain
 RUN bazel build --config=release //cmd/validator:validator
-RUN bazel build --config=release //cmd/slasher:slasher
+# RUN bazel build --config=release //cmd/slasher:slasher
 
 # Copy the binaries out to the root folder.
 # This is done so that we do not have to use git checkout in the final image.
 RUN cp bazel-bin/cmd/beacon-chain/beacon-chain_/beacon-chain /beacon
 RUN cp bazel-bin/cmd/validator/validator_/validator /validator
-RUN cp bazel-bin/cmd/slasher/slasher_/slasher /slasher
+# RUN cp bazel-bin/cmd/slasher/slasher_/slasher /slasher
 
 # Build the final image
 FROM debian:buster-slim
@@ -32,6 +32,6 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 COPY --from=builder /prysm/bazel-bin/cmd/beacon-chain/beacon-chain_/beacon-chain /usr/local/bin/beacon
 COPY --from=builder /prysm/bazel-bin/cmd/validator/validator_/validator /usr/local/bin/validator
-COPY --from=builder /prysm/bazel-bin/cmd/slasher/slasher_/slasher /usr/local/bin/slasher
+# COPY --from=builder /prysm/bazel-bin/cmd/slasher/slasher_/slasher /usr/local/bin/slasher
 
 EXPOSE 4000 8080 13000 12000/udp
