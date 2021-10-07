@@ -17,6 +17,13 @@ Personally I use this project along with Ansible to manage my running containers
 
 ## Change Log
 
+**October 7th 2021**
+Issue with prysm not building correctly. I switched the base image from `rust:slim-buster` to using the prysmatic build-agent:
+
+```
+FROM gcr.io/prysmaticlabs/build-agent AS builder
+```
+
 **August 3rd 2021**
 
 * Issue #8: Utility failed to build because of the removed release. The RSS feed shows v1.10.0 as released, but it looks like it was deleted. I added a dictionary at the top of the `build.py` that is checked before building. If there is a matching entry then the release is skipped.

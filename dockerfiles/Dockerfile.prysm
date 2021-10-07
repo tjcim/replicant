@@ -1,12 +1,6 @@
 # Build Prysm
-FROM rust:slim-buster AS builder
-ARG RELEASE=master
+FROM gcr.io/prysmaticlabs/build-agent AS builder
 
-RUN apt-get update && apt-get install -y libgmp-dev libxml2 libssl-dev g++ unzip zip curl git python libncurses5
-RUN cd "/" \
-    && curl -fLO https://github.com/bazelbuild/bazel/releases/download/3.7.0/bazel-3.7.0-installer-linux-x86_64.sh \
-    && chmod +x bazel-3.7.0-installer-linux-x86_64.sh \
-    && ./bazel-3.7.0-installer-linux-x86_64.sh
 RUN git clone https://github.com/prysmaticlabs/prysm.git
 WORKDIR prysm
 RUN git config advice.detachedHead false \
