@@ -20,7 +20,8 @@ URLS = {
     'lighthouse': 'https://github.com/sigp/lighthouse',
     'prysm': 'https://github.com/prysmaticlabs/prysm',
     'teku': 'https://github.com/PegaSysEng/teku',
-    'utility': 'https://github.com/wealdtech/ethdo'
+    'utility': 'https://github.com/wealdtech/ethdo',
+    'besu': 'https://github.com/hyperledger/besu'
 }
 # If I want to skip any
 SKIP = {
