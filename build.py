@@ -18,10 +18,10 @@ URLS = {
     'deposit_cli': 'https://github.com/ethereum/eth2.0-deposit-cli',
     'go_ethereum': 'https://github.com/ethereum/go-ethereum',
     'lighthouse': 'https://github.com/sigp/lighthouse',
-    'prysm': 'https://github.com/prysmaticlabs/prysm',
-    'teku': 'https://github.com/PegaSysEng/teku',
-    'utility': 'https://github.com/wealdtech/ethdo',
-    'besu': 'https://github.com/hyperledger/besu'
+    # 'prysm': 'https://github.com/prysmaticlabs/prysm',
+    # 'teku': 'https://github.com/PegaSysEng/teku',
+    # 'utility': 'https://github.com/wealdtech/ethdo',
+    # 'besu': 'https://github.com/hyperledger/besu'
 }
 # If I want to skip any
 SKIP = {
@@ -96,7 +96,10 @@ def get_available_apps():
     available_apps = []
     for filename in os.listdir(os.path.join(BASE_DIR, "dockerfiles/")):
         if filename.startswith("Dockerfile."):
-            available_apps.append(filename.split(".")[-1])
+            app_name = filename.split(".")[-1]
+            if URLS.get(app_name):
+                available_apps.append(app_name)
+            # available_apps.append(filename.split(".")[-1])
     return available_apps
 
 
